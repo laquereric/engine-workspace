@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-module EngineWorkspace
+module CoEngineWorkspace
   class ApplicationController < ActionController::Base
     layout "engine_design_system/application"
   end

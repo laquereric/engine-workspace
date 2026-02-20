@@ -1,9 +1,9 @@
 # frozen_string_literal: true
 
-module EngineWorkspace
+module CoEngineWorkspace
   module WorkspaceHelper
     def workspace_chat_badge
-      return nil unless EngineWorkspace.llm_available?
+      return nil unless CoEngineWorkspace.llm_available?
 
       conversation = workspace_conversation rescue nil
       return nil unless conversation
@@ -13,7 +13,7 @@ module EngineWorkspace
     end
 
     def workspace_tasks_badge
-      return nil unless EngineWorkspace.planner_available?
+      return nil unless CoEngineWorkspace.planner_available?
 
       assertions = workspace_assertions rescue []
       proposed_count = assertions.count { |a| a.status == "proposed" }

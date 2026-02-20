@@ -60,7 +60,7 @@ MessageMetadata     <- '{' ('request_id:' UUID)? (',' 'timestamp:' Timestamp)? (
 # ─── ServiceNode (organ hosting bindables) ──────────────────────
 
 ServiceNode         <- 'node:' NodeName ',' 'bindables:' '[' BindableList ']'
-NodeName            <- 'EngineWorkspace'
+NodeName            <- 'CoEngineWorkspace'
 BindableList        <- BindableName (',' BindableName)*
 
 # ─── Routes (API surface) ──────────────────────────────────────

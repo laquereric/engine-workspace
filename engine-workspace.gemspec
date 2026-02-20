@@ -4,7 +4,7 @@ require_relative "lib/engine_workspace/version"
 
 Gem::Specification.new do |spec|
   spec.name        = "engine-workspace"
-  spec.version     = EngineWorkspace::VERSION
+  spec.version     = CoEngineWorkspace::VERSION
   spec.authors     = ["Eric Laquer"]
   spec.email       = ["LaquerEric@gmail.com"]
 

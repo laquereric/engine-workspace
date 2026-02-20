@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-module EngineWorkspace
+module CoEngineWorkspace
   class HeartBeat < ApplicationRecord
     include LibraryHeartbeat::HeartBeatConcern
 

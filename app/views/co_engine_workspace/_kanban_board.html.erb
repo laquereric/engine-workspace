@@ -15,7 +15,7 @@
       <% end %>
     </h4>
     <% proposed.each do |assertion| %>
-      <%= render "engine_workspace/kanban_card", assertion: assertion, dimmed: false %>
+      <%= render "co_engine_workspace/kanban_card", assertion: assertion, dimmed: false %>
     <% end %>
     <% if proposed.empty? %>
       <p class="text-xs text-gray-300 italic py-4 text-center">No proposed tasks</p>
@@ -32,7 +32,7 @@
       <% end %>
     </h4>
     <% accepted.each do |assertion| %>
-      <%= render "engine_workspace/kanban_card", assertion: assertion, dimmed: false %>
+      <%= render "co_engine_workspace/kanban_card", assertion: assertion, dimmed: false %>
     <% end %>
     <% if accepted.empty? %>
       <p class="text-xs text-gray-300 italic py-4 text-center">No accepted tasks</p>
@@ -49,7 +49,7 @@
       <% end %>
     </h4>
     <% completed.each do |assertion| %>
-      <%= render "engine_workspace/kanban_card", assertion: assertion, dimmed: true %>
+      <%= render "co_engine_workspace/kanban_card", assertion: assertion, dimmed: true %>
     <% end %>
     <% if completed.empty? %>
       <p class="text-xs text-gray-300 italic py-4 text-center">No completed tasks</p>

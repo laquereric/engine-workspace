@@ -16,7 +16,7 @@ Engines opt in by setting their layout:
 ```ruby
 class MyController < ApplicationController
   layout "engine_workspace/application"
-  include EngineWorkspace::Workspaceable
+  include CoEngineWorkspace::Workspaceable
 end
 ```
 
@@ -27,7 +27,7 @@ Per-action opt-out via `layout :choose_layout` method.
 
 ## Workspaceable Concern
 
-`include EngineWorkspace::Workspaceable` provides:
+`include CoEngineWorkspace::Workspaceable` provides:
 - `workspace_context` — hash of engine, controller, action, record_id
 - `workspace_conversation` — finds/creates page-scoped EngineLlm::Conversation
 - `workspace_assertions` — planner assertions for current context

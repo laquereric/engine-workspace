@@ -1,7 +1,7 @@
 <div class="min-h-[20rem]" data-controller="kanban">
-  <% if EngineWorkspace.planner_available? %>
+  <% if CoEngineWorkspace.planner_available? %>
     <div id="workspace-kanban-board">
-      <%= render "engine_workspace/kanban_board", assertions: workspace_assertions %>
+      <%= render "co_engine_workspace/kanban_board", assertions: workspace_assertions %>
     </div>
   <% else %>
     <div class="flex items-center justify-center h-64 text-gray-400 text-sm">

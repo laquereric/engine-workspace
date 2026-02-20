@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-module EngineWorkspace
+module CoEngineWorkspace
   module Workspaceable
     extend ActiveSupport::Concern
 
@@ -30,11 +30,11 @@ module EngineWorkspace
       engine_module = workspace_context[:engine]
       return unless engine_module
 
-      user_content = EngineWorkspace::EnginePathResolver.peg_file(engine_module, "user.peg")
-      dev_content  = EngineWorkspace::EnginePathResolver.peg_file(engine_module, "developer.peg")
+      user_content = CoEngineWorkspace::EnginePathResolver.peg_file(engine_module, "user.peg")
+      dev_content  = CoEngineWorkspace::EnginePathResolver.peg_file(engine_module, "developer.peg")
 
-      @peg_user      = user_content ? EngineWorkspace::PegParser.parse(user_content) : nil
-      @peg_developer = dev_content  ? EngineWorkspace::PegParser.parse(dev_content) : nil
+      @peg_user      = user_content ? CoEngineWorkspace::PegParser.parse(user_content) : nil
+      @peg_developer = dev_content  ? CoEngineWorkspace::PegParser.parse(dev_content) : nil
       @peg_user_raw      = user_content
       @peg_developer_raw = dev_content
     rescue StandardError
@@ -45,25 +45,28 @@ module EngineWorkspace
     end
 
     def workspace_conversation
-      return nil unless EngineWorkspace.llm_available?
+      return nil unless CoEngineWorkspace.llm_available?
 
       @workspace_conversation ||= begin
-        scope_key = "workspace:#{workspace_context[:engine]}:#{workspace_context[:controller]}"
+        scope_key = respond_to?(:conversation_scope_key, true) ? conversation_scope_key : default_scope_key
         conversation = EngineLlm::Conversation.find_or_initialize_by(title: scope_key)
         if conversation.new_record?
-          conversation.transcript = [{
-            role: "system",
-            content: workspace_system_prompt
-          }]
-          conversation.model = EngineWorkspace.default_model
+          prompt = respond_to?(:system_prompt, true) ? system_prompt : workspace_system_prompt
+          model  = respond_to?(:chat_model, true) ? chat_model : CoEngineWorkspace.default_model
+          conversation.transcript = [{ role: "system", content: prompt }]
+          conversation.model = model
           conversation.save!
         end
         conversation
       end
     end
 
+    def default_scope_key
+      "workspace:#{workspace_context[:engine]}:#{workspace_context[:controller]}"
+    end
+
     def workspace_assertions
-      return [] unless EngineWorkspace.planner_available?
+      return [] unless CoEngineWorkspace.planner_available?
 
       @workspace_assertions ||= begin
         plan = workspace_plan
@@ -74,7 +77,7 @@ module EngineWorkspace
     end
 
     def workspace_plan
-      return nil unless EngineWorkspace.planner_available?
+      return nil unless CoEngineWorkspace.planner_available?
 
       @workspace_plan ||= begin
         Planner::Plan.find_by(

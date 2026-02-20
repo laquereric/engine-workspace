@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-module EngineWorkspace
+module CoEngineWorkspace
   # Resolves an engine module name (e.g. "EngineSwitch") to its filesystem root
   # via Rails::Engine.root, then provides helpers to read reflection files.
   class EnginePathResolver

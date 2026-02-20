@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-module EngineWorkspace
+module CoEngineWorkspace
   # Lightweight line-by-line parser for .peg reflection files.
   # Extracts header fields, named sections, and PEG rules for display.
   # NOT a full PEG evaluator — structural extraction only.

@@ -5,7 +5,7 @@ require "engine_workspace/peg_parser"
 require "engine_workspace/engine_path_resolver"
 require "engine_workspace/engine" if defined?(Rails)
 
-module EngineWorkspace
+module CoEngineWorkspace
   mattr_accessor :default_model, default: "ollama:command-r"
 
   class << self

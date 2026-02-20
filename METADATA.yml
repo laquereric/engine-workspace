@@ -1,7 +1,7 @@
 ---
-type: engine
+type: library
 name: workspace
-path: top/engine
+path: top/co-engine
 gitlink: https://github.com/laquereric/engine-workspace.git
 repo_urls:
   github: https://github.com/laquereric/engine-workspace

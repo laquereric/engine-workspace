@@ -1,14 +1,14 @@
 <div class="flex flex-col h-96" data-controller="chat">
-  <% if EngineWorkspace.llm_available? %>
+  <% if CoEngineWorkspace.llm_available? %>
     <%# Message list %>
     <div id="workspace-chat-messages"
          class="flex-1 overflow-y-auto space-y-3 p-3"
          data-chat-target="messages">
-      <%= render "engine_workspace/chat_messages", conversation: workspace_conversation %>
+      <%= render "co_engine_workspace/chat_messages", conversation: workspace_conversation %>
     </div>
 
     <%# Input area %>
-    <%= form_with url: engine_workspace.chat_messages_path,
+    <%= form_with url: co_engine_workspace.chat_messages_path,
                   method: :post,
                   data: { chat_target: "form", action: "chat#submit" } do |f| %>
       <div class="border-t border-gray-200 p-3 flex gap-2">

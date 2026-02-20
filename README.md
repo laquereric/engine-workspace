@@ -27,7 +27,7 @@ gem "engine-workspace", path: "path/to/top/engine/engine-workspace"
 Mount the engine:
 
 ```ruby
-mount EngineWorkspace::Engine, at: "/workspace"
+mount CoEngineWorkspace::Engine, at: "/workspace"
 ```
 
 ## Layout
