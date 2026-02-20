@@ -1,0 +1,125 @@
+<%# PEG Summary — displays parsed user.peg and developer.peg using design-system helpers %>
+
+<% if @peg_user.nil? && @peg_developer.nil? %>
+  <%= ds_empty_state(
+    title: "No PEG reflection files found",
+    description: "Run bin/reflect to generate doc/reflection/user.peg and developer.peg for this engine."
+  ) %>
+<% else %>
+  <%# Header: component identity %>
+  <% peg = @peg_developer || @peg_user %>
+  <%= ds_card(title: peg.component || workspace_context[:engine], subtitle: [peg.type, peg.namespace].compact.join(" \u00B7 ")) do %>
+    <div class="flex flex-wrap gap-2">
+      <% if peg.type %>
+        <%= ds_badge(label: peg.type, variant: :info) %>
+      <% end %>
+      <% if peg.namespace %>
+        <%= ds_badge(label: peg.namespace, variant: :neutral) %>
+      <% end %>
+    </div>
+  <% end %>
+
+  <%# Bindable Interface — from user.peg %>
+  <% if @peg_user %>
+    <% bindable_section = @peg_user.sections.find { |s| s.name.start_with?("Bindable") } %>
+    <% if bindable_section %>
+      <%= ds_card(title: "Bindable Interface") do %>
+        <div class="flex flex-wrap gap-2">
+          <% %w[create read update delete list execute].each do |action| %>
+            <%= ds_badge(label: action, variant: :success) %>
+          <% end %>
+        </div>
+        <% action_rule = bindable_section.rules.find { |r| r.name == "Action" } %>
+        <% if action_rule %>
+          <p class="mt-2 text-sm text-gray-500"><%= action_rule.definition %></p>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% end %>
+
+  <%# Models — from developer.peg Models section %>
+  <% if @peg_developer %>
+    <% models_section = @peg_developer.sections.find { |s| s.name == "Models" } %>
+    <% if models_section && models_section.rules.any? %>
+      <% model_rules = models_section.rules.select { |r| r.name.start_with?("Model_") } %>
+      <% if model_rules.any? %>
+        <%= ds_card(title: "Models") do %>
+          <%= ds_data_table(
+            columns: [
+              { key: :name, label: "Model" },
+              { key: :details, label: "Details" }
+            ],
+            rows: model_rules.map { |r|
+              {
+                name: r.name.sub("Model_", ""),
+                details: r.definition
+              }
+            }
+          ) %>
+        <% end %>
+      <% end %>
+    <% end %>
+
+    <%# Routes — from developer.peg Routes section %>
+    <% routes_section = @peg_developer.sections.find { |s| s.name == "Routes" } %>
+    <% if routes_section && routes_section.rules.any? %>
+      <% route_rules = routes_section.rules.select { |r| r.name.start_with?("Route_") } %>
+      <% if route_rules.any? %>
+        <%= ds_card(title: "Routes") do %>
+          <%= ds_data_table(
+            columns: [
+              { key: :name, label: "Route" },
+              { key: :definition, label: "Definition" }
+            ],
+            rows: route_rules.map { |r|
+              {
+                name: r.name.sub("Route_", ""),
+                definition: r.definition
+              }
+            }
+          ) %>
+        <% end %>
+      <% end %>
+    <% end %>
+
+    <%# Schema — from developer.peg Schema section %>
+    <% schema_section = @peg_developer.sections.find { |s| s.name.start_with?("Schema") } %>
+    <% if schema_section && schema_section.rules.any? %>
+      <% table_rules = schema_section.rules.select { |r| r.name.start_with?("Table_") } %>
+      <% if table_rules.any? %>
+        <%= ds_card(title: "Schema") do %>
+          <%= ds_data_table(
+            columns: [
+              { key: :table, label: "Table" },
+              { key: :columns, label: "Columns" }
+            ],
+            rows: table_rules.map { |r|
+              {
+                table: r.name.sub("Table_", ""),
+                columns: r.definition
+              }
+            }
+          ) %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% end %>
+
+  <%# Dependencies — from user.peg Dependencies section %>
+  <% dep_source = @peg_user || @peg_developer %>
+  <% if dep_source %>
+    <% deps_section = dep_source.sections.find { |s| s.name.start_with?("Dependencies") } %>
+    <% if deps_section && deps_section.rules.any? %>
+      <% dep_rules = deps_section.rules.select { |r| r.name.start_with?("Dep_") } %>
+      <% if dep_rules.any? %>
+        <%= ds_card(title: "Dependencies") do %>
+          <div class="flex flex-wrap gap-2">
+            <% dep_rules.each do |dep| %>
+              <%= ds_badge(label: dep.name.sub("Dep_", ""), variant: :neutral) %>
+            <% end %>
+          </div>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% end %>
+<% end %>

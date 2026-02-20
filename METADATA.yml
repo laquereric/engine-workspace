@@ -1,0 +1,9 @@
+---
+type: engine
+name: workspace
+path: top/engine
+gitlink: https://github.com/laquereric/engine-workspace.git
+repo_urls:
+  github: https://github.com/laquereric/engine-workspace
+team:
+  - Training

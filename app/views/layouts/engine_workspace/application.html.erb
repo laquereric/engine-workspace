@@ -1,0 +1,32 @@
+<%# Workspace layout — extends engine_design_system/application with four-panel accordion %>
+<% content_for :head do %>
+  <style>
+    details[open] > summary + div {
+      animation: accordion-open 0.2s ease-out;
+    }
+    @keyframes accordion-open {
+      from { opacity: 0; max-height: 0; }
+      to   { opacity: 1; max-height: 2000px; }
+    }
+  </style>
+<% end %>
+
+<%= render layout: "engine_design_system/application" do %>
+  <%= ds_accordion(variant: :default, persist_state: true) do |accordion| %>
+    <% accordion.with_panel(id: "workspace-page", title: "Page", open: true) do %>
+      <%= render "engine_workspace/peg_summary" %>
+    <% end %>
+
+    <% accordion.with_panel(id: "workspace-chat", title: "Chat", badge: workspace_chat_badge) do %>
+      <%= render "engine_workspace/chat_panel" %>
+    <% end %>
+
+    <% accordion.with_panel(id: "workspace-tasks", title: "Tasks", badge: workspace_tasks_badge) do %>
+      <%= render "engine_workspace/kanban_panel" %>
+    <% end %>
+
+    <% accordion.with_panel(id: "workspace-legacy", title: "Legacy") do %>
+      <%= yield %>
+    <% end %>
+  <% end %>
+<% end %>
