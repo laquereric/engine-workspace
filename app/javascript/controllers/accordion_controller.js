@@ -77,6 +77,7 @@ export default class extends Controller {
   }
 
   get storageKey() {
-    return `workspace-accordion-${window.location.pathname}`
+    const firstId = this.panelTargets[0]?.dataset.panelId || ""
+    return `workspace-accordion-${window.location.pathname}-${firstId}`
   }
 }
