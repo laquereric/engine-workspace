@@ -7,99 +7,121 @@ module CoEngineWorkspace
   #
   #   module EngineSwitch
   #     class ChatController < CoEngineWorkspace::ChatController
-  #       def chat_model = "anthropic:claude-sonnet-4-5-20250929"
-  #       def system_prompt = "You are the Switch engine assistant..."
+  #       def build_system_prompt = "You are the Switch engine assistant..."
+  #       def chat_welcome_data = { intro: "...", items: [...], outro: "..." }
   #     end
   #   end
   #
+  # Override hooks:
+  #   build_system_prompt  — system prompt for the LLM
+  #   chat_welcome_data    — welcome card content { intro:, items: [...], outro: }
+  #   conversation_title   — conversation scope key (default: derived from module name)
+  #   set_nav_context      — set @engine_name and @bindables for nav bar
+  #
   class ChatController < ApplicationController
     include Workspaceable
+    skip_forgery_protection only: :chat
     before_action :set_nav_context, only: :index
 
-    def index; end
+    def index
+      welcome = chat_welcome_data
+      @chat_welcome_items = welcome.delete(:items) || []
+      @chat_welcome = welcome
+    end
 
-    def create
-      unless CoEngineWorkspace.llm_available?
-        head :service_unavailable
-        return
+    def chat
+      user_content = params[:message].to_s.strip
+      if user_content.blank?
+        return render json: { error: "Message cannot be blank" }, status: :unprocessable_entity
       end
 
-      conversation = workspace_conversation
-      user_message = params[:message]&.strip
-      return head(:unprocessable_entity) if user_message.blank?
+      unless llm_available?
+        return render json: { error: "LLM engine is not available" }, status: :service_unavailable
+      end
 
-      # Read transcript directly from DB — Raix adapter is in-memory only
-      messages = read_transcript(conversation)
-      messages << { "role" => "user", "content" => user_message }
+      conversation = find_or_create_conversation
+
+      messages = conversation.read_attribute(:transcript) || []
+      messages = [{ "role" => "system", "content" => build_system_prompt }] + messages.reject { |m| m["role"] == "system" }
+      messages << { "role" => "user", "content" => user_content }
 
       begin
-        response = conversation.send(:ruby_llm_request,
-          params: {},
-          model: conversation.model || chat_model,
-          messages: messages)
-        assistant_content = extract_content(response)
-        messages << { "role" => "assistant", "content" => assistant_content }
-      rescue StandardError => e
-        messages << { "role" => "assistant", "content" => "Error: #{e.message}" }
+        conversation.transcript.clear
+        messages.each { |msg| conversation.transcript << msg }
+
+        response = conversation.chat_completion(
+          params: { temperature: 0.7, max_tokens: 2048 }
+        )
+        content = extract_content(response) || response.to_s
+        messages << { "role" => "assistant", "content" => content }
+      rescue => e
+        Rails.logger.error("[Workspace Chat] chat_completion failed: #{e.class}: #{e.message}")
+        content = "I'm sorry, I encountered an error processing your request."
+        messages << { "role" => "assistant", "content" => content }
       end
 
-      save_transcript(conversation, messages)
+      conversation.write_attribute(:transcript, messages)
+      conversation.save!
 
-      respond_to do |format|
-        format.turbo_stream { render_chat_stream(conversation, messages) }
-        format.html { redirect_back(fallback_location: "/") }
-      end
+      render json: { role: "assistant", content: content, conversation_id: conversation.id }
     end
 
     private
 
+    def llm_available?
+      defined?(EngineLlm::Conversation)
+    end
+
+    def find_or_create_conversation
+      model = resolve_model
+      title = conversation_title
+
+      conversation = EngineLlm::Conversation.find_by(title: title)
+      unless conversation
+        conversation = EngineLlm::Conversation.create!(
+          title: title,
+          transcript: []
+        )
+      end
+
+      conversation.model = model if model.present?
+      conversation
+    end
+
+    # Override to change conversation scope. Default derives from engine module.
+    # e.g. EngineContext::ChatController → "engine_context:chat"
+    def conversation_title
+      self.class.module_parent_name.underscore.tr("/", ":") + ":chat"
+    end
+
+    def resolve_model
+      if defined?(EngineLlm::Preference)
+        pref = EngineLlm::Preference.instance
+        pref.model_value || EngineLlm::Setting.get("model")
+      end
+    end
+
+    # Override to customize the system prompt for the LLM.
+    def build_system_prompt
+      "You are a helpful assistant."
+    end
+
+    # Override to customize the welcome card content.
+    def chat_welcome_data
+      { intro: "How can I help you today?", items: [], outro: "" }
+    end
+
+    # Override to set @engine_name and @bindables for the nav bar.
     def set_nav_context
-      registry = CoEngineWorkspace::BindableController.registry
-      @bindables = registry[:by_name].keys
-      @engine_name = registry[:by_engine].keys.first&.titleize || "Workspace"
+      @engine_name = self.class.module_parent_name.demodulize.sub(/\AEngine/, "")
+      @bindables = []
     end
 
-    # Override in subclasses to change the LLM model
-    def chat_model
-      CoEngineWorkspace.default_model
-    end
-
-    # Override in subclasses to customize the system prompt
-    def system_prompt
-      workspace_system_prompt
-    end
-
-    # Override in subclasses to customize conversation scoping
-    def conversation_scope_key
-      "workspace:#{workspace_context[:engine]}:#{workspace_context[:controller]}"
-    end
-
-    # Override in subclasses to customize response extraction
     def extract_content(response)
-      response.dig("choices", 0, "message", "content")
-    end
+      return response if response.is_a?(String)
+      return response.dig("choices", 0, "message", "content") if response.is_a?(Hash)
 
-    # Read transcript as plain array from DB, bypassing Raix adapter.
-    # Handles double-encoded JSON (serialize + manual to_json).
-    def read_transcript(conversation)
-      raw = conversation.read_attribute_before_type_cast("transcript") || "[]"
-      result = JSON.parse(raw)
-      result = JSON.parse(result) if result.is_a?(String)
-      Array(result)
-    end
-
-    # Write transcript array directly to DB, bypassing Raix adapter.
-    def save_transcript(conversation, messages)
-      conversation.update_column(:transcript, JSON.dump(messages))
-    end
-
-    # Override in subclasses to customize the Turbo Stream response
-    def render_chat_stream(_conversation, messages)
-      render turbo_stream: turbo_stream.update(
-        "workspace-chat-messages",
-        partial: "co_engine_workspace/chat_messages",
-        locals: { messages: messages }
-      )
+      nil
     end
   end
 end
