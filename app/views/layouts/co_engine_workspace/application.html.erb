@@ -17,7 +17,7 @@
       <%= render "co_engine_workspace/peg_summary" %>
     <% end %>
 
-    <% accordion.with_panel(id: "workspace-chat", title: "Chat", badge: workspace_chat_badge) do %>
+    <% accordion.with_panel(id: "workspace-chat", title: "Chat", badge: workspace_chat_badge, pinned: true) do %>
       <%= render "co_engine_workspace/chat_panel" %>
     <% end %>
 
