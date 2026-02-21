@@ -1,9 +1,18 @@
-<% if conversation && conversation.transcript.present? %>
-  <% conversation.transcript.each do |message| %>
-    <% role = (message[:role] || message["role"]).to_s %>
-    <% content = message[:content] || message["content"] %>
-    <% next if role == "system" %>
-    <%= ds_chat_bubble(role: role, message: content) %>
+<%# Accepts either `messages` (array of hashes) or `conversation` (AR record).
+     The turbo stream path passes `messages` directly; the index view passes `conversation`. %>
+<% unless local_assigns.key?(:messages) %>
+  <%
+    raw = conversation&.read_attribute_before_type_cast("transcript") || "[]"
+    messages = JSON.parse(raw)
+    messages = JSON.parse(messages) if messages.is_a?(String)
+  %>
+<% end %>
+<% non_system = messages.reject { |m| (m["role"] || m[:role]).to_s == "system" } %>
+<% if non_system.any? %>
+  <% non_system.each do |message| %>
+    <% role = (message["role"] || message[:role]).to_s %>
+    <% msg = message["content"] || message[:content] %>
+    <%= ds_chat_bubble(role: role, message: msg) %>
   <% end %>
 <% else %>
   <%= ds_empty_state(title: "No messages yet. Start a conversation.") %>

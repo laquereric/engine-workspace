@@ -28,20 +28,25 @@ module CoEngineWorkspace
       user_message = params[:message]&.strip
       return head(:unprocessable_entity) if user_message.blank?
 
-      conversation.transcript << { role: "user", content: user_message }
+      # Read transcript directly from DB — Raix adapter is in-memory only
+      messages = read_transcript(conversation)
+      messages << { "role" => "user", "content" => user_message }
 
       begin
-        response = conversation.chat_completion(openai: false)
+        response = conversation.send(:ruby_llm_request,
+          params: {},
+          model: conversation.model || chat_model,
+          messages: messages)
         assistant_content = extract_content(response)
-        conversation.transcript << { role: "assistant", content: assistant_content }
-        conversation.save!
+        messages << { "role" => "assistant", "content" => assistant_content }
       rescue StandardError => e
-        conversation.transcript << { role: "assistant", content: "Error: #{e.message}" }
-        conversation.save!
+        messages << { "role" => "assistant", "content" => "Error: #{e.message}" }
       end
 
+      save_transcript(conversation, messages)
+
       respond_to do |format|
-        format.turbo_stream { render_chat_stream(conversation) }
+        format.turbo_stream { render_chat_stream(conversation, messages) }
         format.html { redirect_back(fallback_location: "/") }
       end
     end
@@ -74,12 +79,26 @@ module CoEngineWorkspace
       response.dig("choices", 0, "message", "content")
     end
 
+    # Read transcript as plain array from DB, bypassing Raix adapter.
+    # Handles double-encoded JSON (serialize + manual to_json).
+    def read_transcript(conversation)
+      raw = conversation.read_attribute_before_type_cast("transcript") || "[]"
+      result = JSON.parse(raw)
+      result = JSON.parse(result) if result.is_a?(String)
+      Array(result)
+    end
+
+    # Write transcript array directly to DB, bypassing Raix adapter.
+    def save_transcript(conversation, messages)
+      conversation.update_column(:transcript, JSON.dump(messages))
+    end
+
     # Override in subclasses to customize the Turbo Stream response
-    def render_chat_stream(conversation)
+    def render_chat_stream(_conversation, messages)
       render turbo_stream: turbo_stream.replace(
         "workspace-chat-messages",
         partial: "co_engine_workspace/chat_messages",
-        locals: { conversation: conversation }
+        locals: { messages: messages }
       )
     end
   end
