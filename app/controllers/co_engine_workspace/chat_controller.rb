@@ -95,7 +95,7 @@ module CoEngineWorkspace
 
     # Override in subclasses to customize the Turbo Stream response
     def render_chat_stream(_conversation, messages)
-      render turbo_stream: turbo_stream.replace(
+      render turbo_stream: turbo_stream.update(
         "workspace-chat-messages",
         partial: "co_engine_workspace/chat_messages",
         locals: { messages: messages }
