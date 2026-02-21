@@ -101,16 +101,13 @@ module CoEngineWorkspace
       parts.join("\n")
     end
 
-    # Builds a system prompt from manifest.json reflection data.
-    # Returns nil if no manifest exists for this engine.
+    # Reads the pre-generated prompt.md from doc/reflection/.
+    # Returns nil if no prompt file exists for this engine.
     def build_prompt_from_reflection
       engine_module = workspace_context[:engine]
       return nil unless engine_module
 
-      manifest = CoEngineWorkspace::EnginePathResolver.manifest(engine_module)
-      return nil unless manifest
-
-      CoEngineWorkspace::ReflectionPromptBuilder.new(manifest).build
+      CoEngineWorkspace::EnginePathResolver.prompt(engine_module)
     rescue StandardError
       nil
     end

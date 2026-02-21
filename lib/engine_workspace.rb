@@ -3,7 +3,6 @@
 require "engine_workspace/version"
 require "engine_workspace/peg_parser"
 require "engine_workspace/engine_path_resolver"
-require "engine_workspace/reflection_prompt_builder"
 require "engine_workspace/engine" if defined?(Rails)
 
 module CoEngineWorkspace
