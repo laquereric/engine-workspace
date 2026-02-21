@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require "json"
+
 module CoEngineWorkspace
   # Resolves an engine module name (e.g. "EngineSwitch") to its filesystem root
   # via Rails::Engine.root, then provides helpers to read reflection files.
@@ -19,6 +21,15 @@ module CoEngineWorkspace
 
         path = File.join(root, "doc", "reflection", filename)
         File.exist?(path) ? File.read(path) : nil
+      end
+
+      # Reads and parses manifest.json from doc/reflection/ for the given engine module.
+      def manifest(module_name)
+        root = resolve(module_name)
+        return nil unless root
+
+        path = File.join(root, "doc", "reflection", "manifest.json")
+        File.exist?(path) ? JSON.parse(File.read(path)) : nil
       end
 
       private

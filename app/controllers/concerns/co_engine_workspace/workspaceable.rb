@@ -71,6 +71,13 @@ module CoEngineWorkspace
     end
 
     def workspace_system_prompt
+      reflection_prompt = build_prompt_from_reflection
+      if reflection_prompt
+        dynamic = dynamic_prompt_context
+        return [reflection_prompt, dynamic].compact.join("\n\n")
+      end
+
+      # Fallback: PEG-only prompt when no manifest.json exists
       ctx = workspace_context
       parts = []
       parts << "You are a workspace assistant for the #{ctx[:engine]} engine."
@@ -92,6 +99,27 @@ module CoEngineWorkspace
       parts << "Help the user understand this engine's architecture, models, routes, and dependencies. Be concise and helpful."
 
       parts.join("\n")
+    end
+
+    # Builds a system prompt from manifest.json reflection data.
+    # Returns nil if no manifest exists for this engine.
+    def build_prompt_from_reflection
+      engine_module = workspace_context[:engine]
+      return nil unless engine_module
+
+      manifest = CoEngineWorkspace::EnginePathResolver.manifest(engine_module)
+      return nil unless manifest
+
+      CoEngineWorkspace::ReflectionPromptBuilder.new(manifest).build
+    rescue StandardError
+      nil
+    end
+
+    # Hook for engines to inject dynamic state into the system prompt.
+    # Override in subclasses to add live context (e.g. container status, service health).
+    # Returns a string or nil.
+    def dynamic_prompt_context
+      nil
     end
   end
 end

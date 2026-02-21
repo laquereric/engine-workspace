@@ -102,8 +102,10 @@ module CoEngineWorkspace
     end
 
     # Override to customize the system prompt for the LLM.
+    # Default: uses reflection-based prompt from manifest.json if available,
+    # falls back to PEG-based prompt from workspace_system_prompt.
     def build_system_prompt
-      "You are a helpful assistant."
+      workspace_system_prompt
     end
 
     # Override to customize the welcome card content.
