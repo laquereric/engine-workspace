@@ -17,10 +17,16 @@ export default class extends Controller {
     const panel = event.currentTarget.closest("details")
     if (!panel) return
 
+    // Pinned panels cannot be closed
+    if (panel.hasAttribute("data-pinned") && panel.open) {
+      event.preventDefault()
+      return
+    }
+
     if (this.singleOpenValue && !panel.open) {
-      // Close all other panels when opening this one
+      // Close all other non-pinned panels when opening this one
       this.panelTargets.forEach((p) => {
-        if (p !== panel) p.removeAttribute("open")
+        if (p !== panel && !p.hasAttribute("data-pinned")) p.removeAttribute("open")
       })
     }
 
@@ -67,6 +73,9 @@ export default class extends Controller {
     if (!Array.isArray(openIds)) return
 
     this.panelTargets.forEach((panel) => {
+      // Pinned panels are always open — skip them
+      if (panel.hasAttribute("data-pinned")) return
+
       const id = panel.dataset.panelId
       if (openIds.includes(id)) {
         panel.setAttribute("open", "")
