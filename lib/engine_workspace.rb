@@ -12,9 +12,5 @@ module CoEngineWorkspace
     def llm_available?
       defined?(EngineLlm)
     end
-
-    def planner_available?
-      defined?(Planner)
-    end
   end
 end

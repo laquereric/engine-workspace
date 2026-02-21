@@ -1,0 +1,13 @@
+<%# Shared partial for show + turbo_stream.replace %>
+<% record = record.transform_keys(&:to_sym) %>
+<% fields = record.keys.reject { |k| k == :id }.map { |k| { key: k, label: k.to_s.titleize } } %>
+
+<%= ds_bindable_detail(
+  bindable_name: bindable_name,
+  record: record,
+  fields: fields,
+  actions: [
+    { label: "Edit", path: co_engine_workspace.bindable_edit_path(@plural_name, record[:id]), variant: :secondary },
+    { label: "Execute", path: co_engine_workspace.bindable_execute_path(@plural_name, record[:id]), variant: :primary }
+  ]
+) %>

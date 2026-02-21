@@ -8,10 +8,10 @@ Gem::Specification.new do |spec|
   spec.authors     = ["Eric Laquer"]
   spec.email       = ["LaquerEric@gmail.com"]
 
-  spec.summary     = "Workspace layout engine — accordion-based page + chat + kanban shell"
-  spec.description = "Rails engine providing a three-panel accordion workspace layout that " \
-                     "composes an engine's page view, an AI chat panel (engine-llm), and a " \
-                     "task kanban panel (engine-planner) into a unified workspace experience."
+  spec.summary     = "Workspace layout engine — nav bar, chat IO, and bindable CRUD"
+  spec.description = "Rails engine providing per-page workspace layout with navigation, " \
+                     "an AI chat panel (engine-llm), and generic bindable CRUD for any " \
+                     "engine that registers biological-IT Bindables."
   spec.homepage    = "https://github.com/laquereric/engine-workspace"
   spec.license     = "MIT"
   spec.required_ruby_version = ">= 3.2.0"

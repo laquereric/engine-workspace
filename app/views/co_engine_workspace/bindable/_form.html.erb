@@ -1,0 +1,24 @@
+<%# Generic bindable form — renders a field for each key in @record %>
+<% record = (@record || {}).transform_keys(&:to_sym) %>
+<% form_url = record[:id] ? co_engine_workspace.bindable_update_path(@plural_name, record[:id]) : co_engine_workspace.bindable_create_path(@plural_name) %>
+<% form_method = record[:id] ? :patch : :post %>
+
+<%= form_with url: form_url, method: form_method, scope: @bindable_name, class: "space-y-6" do |f| %>
+  <% record.each do |key, value| %>
+    <% next if key == :id %>
+    <div>
+      <label class="block text-sm font-medium text-gray-700 mb-1"><%= key.to_s.titleize %></label>
+      <input type="text"
+             name="<%= @bindable_name %>[<%= key %>]"
+             value="<%= value %>"
+             class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent" />
+    </div>
+  <% end %>
+
+  <div class="flex gap-2">
+    <%= ds_button label: record[:id] ? "Update" : "Create", variant: :primary %>
+    <%= ds_button label: "Cancel",
+                  href: record[:id] ? co_engine_workspace.bindable_record_path(@plural_name, record[:id]) : co_engine_workspace.bindable_index_path(@plural_name),
+                  variant: :secondary %>
+  </div>
+<% end %>

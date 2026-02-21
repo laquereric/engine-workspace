@@ -1,0 +1,13 @@
+<%# Bindable detail + Chat IO — split layout %>
+<%= ds_split_layout do |layout| %>
+  <% layout.with_main_panel do %>
+    <div id="bindable-record-<%= @record[:id] || @record['id'] %>">
+      <%= render "co_engine_workspace/bindable/record",
+                 record: @record,
+                 bindable_name: @bindable_name %>
+    </div>
+  <% end %>
+  <% layout.with_side_panel do %>
+    <%= render "co_engine_workspace/chat_io" %>
+  <% end %>
+<% end %>

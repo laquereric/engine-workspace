@@ -1,0 +1,14 @@
+<%# Chat IO — reusable chat panel. Fills its container.
+     Accepts optional `height` local (default: "h-full"). %>
+<%= ds_chat_panel(
+  form_url: co_engine_workspace.chat_messages_path,
+  available: CoEngineWorkspace.llm_available?,
+  height: local_assigns.fetch(:height, "h-full"),
+  messages_id: "workspace-chat-messages",
+  container_data: { controller: "chat" },
+  form_data:      { chat_target: "form", action: "chat#submit" },
+  input_data:     { chat_target: "input", action: "keydown->chat#keydown" },
+  messages_data:  { chat_target: "messages" }
+) do %>
+  <%= render "co_engine_workspace/chat_messages", conversation: workspace_conversation %>
+<% end %>

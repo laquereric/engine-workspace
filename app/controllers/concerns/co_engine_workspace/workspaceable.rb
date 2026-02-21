@@ -7,8 +7,7 @@ module CoEngineWorkspace
     included do
       before_action :set_workspace_context
       before_action :load_peg_data
-      helper_method :workspace_conversation, :workspace_assertions, :workspace_plan,
-                    :workspace_context
+      helper_method :workspace_conversation, :workspace_context, :workspace_engine_name
     end
 
     private
@@ -20,6 +19,12 @@ module CoEngineWorkspace
         action: action_name,
         record_id: params[:id]
       }
+      @engine_name ||= workspace_engine_name
+      @bindables   ||= []
+    end
+
+    def workspace_engine_name
+      self.class.module_parent_name&.underscore&.sub(/^engine_/, "")
     end
 
     def workspace_context
@@ -63,29 +68,6 @@ module CoEngineWorkspace
 
     def default_scope_key
       "workspace:#{workspace_context[:engine]}:#{workspace_context[:controller]}"
-    end
-
-    def workspace_assertions
-      return [] unless CoEngineWorkspace.planner_available?
-
-      @workspace_assertions ||= begin
-        plan = workspace_plan
-        plan ? plan.assertions.includes(:authority, :perspective, :frames).ordered : []
-      end
-    rescue StandardError
-      []
-    end
-
-    def workspace_plan
-      return nil unless CoEngineWorkspace.planner_available?
-
-      @workspace_plan ||= begin
-        Planner::Plan.find_by(
-          title: "Workspace: #{workspace_context[:engine]}"
-        )
-      end
-    rescue StandardError
-      nil
     end
 
     def workspace_system_prompt

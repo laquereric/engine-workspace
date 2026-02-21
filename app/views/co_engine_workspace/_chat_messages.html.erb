@@ -3,16 +3,8 @@
     <% role = (message[:role] || message["role"]).to_s %>
     <% content = message[:content] || message["content"] %>
     <% next if role == "system" %>
-
-    <div class="flex <%= role == 'user' ? 'justify-end' : 'justify-start' %>">
-      <div class="max-w-[80%] rounded-lg px-3 py-2 text-sm
-                  <%= role == 'user' ? 'bg-primary-600 text-white' : 'bg-gray-100 text-gray-900' %>">
-        <%= simple_format(content, {}, wrapper_tag: "span") %>
-      </div>
-    </div>
+    <%= ds_chat_bubble(role: role, message: content) %>
   <% end %>
 <% else %>
-  <div class="flex items-center justify-center h-full text-gray-400 text-sm">
-    <p>No messages yet. Start a conversation.</p>
-  </div>
+  <%= ds_empty_state(title: "No messages yet. Start a conversation.") %>
 <% end %>

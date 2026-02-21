@@ -1,13 +1,23 @@
 # Engine Workspace
 
-Three-panel accordion layout composing page + chat + kanban into a unified workspace.
+Per-page layout engine with nav bar, chat IO, and bindable CRUD.
 
 ## Layout
 
-`layouts/engine_workspace/application` — extends design-system layout, wraps yield in ds_accordion:
-- **Page** panel (open by default) — host engine's view content
-- **Chat** panel (collapsed) — engine-llm conversation scoped to current page
-- **Tasks** panel (collapsed) — engine-planner assertions in kanban board
+`layouts/co_engine_workspace/application` — extends design-system layout with nav bar. Each page defines its own content structure.
+
+### Pages
+
+| Route | Content | Layout |
+|-------|---------|--------|
+| `/chat` | Full-page chat IO | Single column |
+| `/dashboard` | Bindable count cards | Single column |
+| `/:bindable_name` | Bindable list + chat IO | 2/3 + 1/3 grid |
+| `/:bindable_name/:id` | Bindable detail + chat IO | 2/3 + 1/3 grid |
+
+### Chat IO Partial
+
+`_chat_io.html.erb` — reusable chat panel rendered on every page (as main content or side panel). Accepts optional `height` local (default: `h-full`).
 
 ## Using the Workspace Layout
 
@@ -15,7 +25,7 @@ Engines opt in by setting their layout:
 
 ```ruby
 class MyController < ApplicationController
-  layout "engine_workspace/application"
+  layout "co_engine_workspace/application"
   include CoEngineWorkspace::Workspaceable
 end
 ```
@@ -30,20 +40,15 @@ Per-action opt-out via `layout :choose_layout` method.
 `include CoEngineWorkspace::Workspaceable` provides:
 - `workspace_context` — hash of engine, controller, action, record_id
 - `workspace_conversation` — finds/creates page-scoped EngineLlm::Conversation
-- `workspace_assertions` — planner assertions for current context
-- `workspace_plan` — active Planner::Plan for current engine
 
 ## Soft Dependencies
 
 - **engine-llm**: chat panel. If not loaded, shows "Chat not available".
-- **engine-planner**: kanban panel. If not loaded, shows "Tasks not available".
-- **engine-design-system**: required. Provides accordion component and base layout.
+- **engine-design-system**: required. Provides nav bar, bindable components, and base layout.
 
 ## Stimulus Controllers
 
-- `accordion` — expand/collapse, localStorage persistence, single-open mode
 - `chat` — auto-scroll, Enter-to-submit, textarea auto-resize
-- `kanban` — card click navigates to planner assertion detail
 
 ## Table Prefix
 

@@ -12,12 +12,10 @@ module CoEngineWorkspace
       unread > 0 ? unread : nil
     end
 
-    def workspace_tasks_badge
-      return nil unless CoEngineWorkspace.planner_available?
-
-      assertions = workspace_assertions rescue []
-      proposed_count = assertions.count { |a| a.status == "proposed" }
-      proposed_count > 0 ? proposed_count : nil
-    end
+    # Workspace aliases — delegate to design system helpers
+    def ws_nav_bar(...)          = ds_nav_bar(...)
+    def ws_bindable_list(...)    = ds_bindable_list(...)
+    def ws_bindable_detail(...)  = ds_bindable_detail(...)
+    def ws_bindable_counts(...)  = ds_bindable_counts(...)
   end
 end

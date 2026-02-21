@@ -1,0 +1,22 @@
+<%# Bindable list + Chat IO — split layout %>
+<%= ds_split_layout do |layout| %>
+  <% layout.with_main_panel do %>
+    <%= ds_bindable_list(
+      bindable_name: @bindable_name,
+      records: @records.map { |r|
+        row = r.is_a?(Hash) ? r.transform_keys(&:to_sym) : r.as_json.symbolize_keys
+        first_key = @columns.first&.dig(:key)
+        if first_key && row[first_key]
+          row[first_key] = link_to(row[first_key], co_engine_workspace.bindable_record_path(@plural_name, row[:id]),
+                                    class: "text-primary-600 hover:text-primary-800 font-medium")
+        end
+        row.slice(*@columns.map { |c| c[:key] })
+      },
+      columns: @columns,
+      new_path: co_engine_workspace.bindable_new_path(@plural_name)
+    ) %>
+  <% end %>
+  <% layout.with_side_panel do %>
+    <%= render "co_engine_workspace/chat_io" %>
+  <% end %>
+<% end %>

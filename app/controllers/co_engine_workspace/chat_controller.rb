@@ -14,6 +14,9 @@ module CoEngineWorkspace
   #
   class ChatController < ApplicationController
     include Workspaceable
+    before_action :set_nav_context, only: :index
+
+    def index; end
 
     def create
       unless CoEngineWorkspace.llm_available?
@@ -44,6 +47,12 @@ module CoEngineWorkspace
     end
 
     private
+
+    def set_nav_context
+      registry = CoEngineWorkspace::BindableController.registry
+      @bindables = registry[:by_name].keys
+      @engine_name = registry[:by_engine].keys.first&.titleize || "Workspace"
+    end
 
     # Override in subclasses to change the LLM model
     def chat_model
