@@ -101,12 +101,23 @@ module CoEngineWorkspace
       parts.join("\n")
     end
 
-    # Reads the pre-generated prompt.md from doc/reflection/.
-    # Returns nil if no prompt file exists for this engine.
+    # Acquires prompt.md through the engine-platform Reflection Bindable.
+    # Falls back to direct file read if the Bindable is unavailable.
     def build_prompt_from_reflection
       engine_module = workspace_context[:engine]
       return nil unless engine_module
 
+      if defined?(EnginePlatform::Reflection)
+        context = LibraryBiological::ContextRecord.new(
+          action: :execute,
+          target: "reflection",
+          payload: { operation: "prompt", module_name: engine_module }
+        )
+        result = EnginePlatform::Reflection.new.handle(context)
+        return result[:prompt] if result.is_a?(Hash) && result[:prompt]
+      end
+
+      # Fallback: direct file read
       CoEngineWorkspace::EnginePathResolver.prompt(engine_module)
     rescue StandardError
       nil
