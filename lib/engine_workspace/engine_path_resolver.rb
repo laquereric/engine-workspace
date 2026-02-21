@@ -23,15 +23,6 @@ module CoEngineWorkspace
         File.exist?(path) ? File.read(path) : nil
       end
 
-      # Reads prompt.md from doc/reflection/ for the given engine module.
-      def prompt(module_name)
-        root = resolve(module_name)
-        return nil unless root
-
-        path = File.join(root, "doc", "reflection", "prompt.md")
-        File.exist?(path) ? File.read(path) : nil
-      end
-
       # Reads and parses manifest.json from doc/reflection/ for the given engine module.
       def manifest(module_name)
         root = resolve(module_name)
