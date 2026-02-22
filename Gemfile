@@ -18,14 +18,12 @@ eco_root = __dir__
 eco_root = File.dirname(eco_root) until File.exist?("#{eco_root}/Gemfile.eco")
 eval_gemfile "#{eco_root}/Gemfile.eco"
 
-eco_gem "library-citizen"
 eco_gem "engine-design-system"
 
 # Soft dependencies — loaded at runtime if available
 # eco_gem "engine-llm"
 # eco_gem "engine-planner"
 
-# Transitive deps of library-citizen need path refs until gems are published
 eco_gem "library-exception"
 eco_gem "library-biological"
 eco_gem "service-protege"
